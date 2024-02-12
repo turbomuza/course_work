@@ -86,7 +86,7 @@ def save_photo(url: str, thread: int):
 
 
 if __name__ == "__main__":
-    urls = ["https://www.youtube.com/watch?v=h1wly909BYw", "https://www.youtube.com/watch?v=dhVzWNos718",
+    urls = ["https://www.youtube.com/watch?v=h1wly909BYw", "https://www.youtube.com/watch?v=rWOCjna6x2I",
             "https://www.youtube.com/watch?v=Feg-W433_TM"]
     thread_count = len(urls)
 
