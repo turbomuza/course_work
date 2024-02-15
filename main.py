@@ -1,17 +1,16 @@
 import time
-from telnetlib import EC
-
+import json
+import os
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from concurrent.futures import ProcessPoolExecutor
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import concurrent.futures
 import telegram
 
-TOKEN = "6840719178:AAH-62Ez5bz3IxNPE-FmShUPoIGjHorv0eE"
-bot_user_id = 851080586
+TOKEN = os.environ["TG_ALERT_TOKEN"]
+bot_user_id = int(os.environ["BOT_USER_ID"])
 bot = telegram.Bot(token=TOKEN)
 
 
@@ -22,7 +21,6 @@ def send_telegram_message(message, delay_seconds=3):
     time.sleep(delay_seconds)
     if response.status_code != 200:
         print(f"Ошибка при отправке сообщения: {response.text}")
-
 
 
 def hide_controls(browser):
@@ -71,11 +69,16 @@ def save_photo(url: str, thread: int):
     hide_controls(browser)
 
     print(f"Ссылка / поток #{thread} готова к выполнению скриншотов\n.")
+
+    base_dir = os.path.join(os.sep, 'tm_dataset', f'photos_{thread}')
+    os.makedirs(base_dir, exist_ok=True)
+
     counter = 0
     while counter < 1441:
-        timestamp = time.strftime("%Y-%m-%d_%H:%M")
-
-        browser.find_element(By.CLASS_NAME, 'html5-main-video').screenshot(f'photos/screen_{thread}_{timestamp}.png')
+        timestamp = time.strftime("%Y-%m-%d_%H-%M")
+        screenshot = browser.find_element(By.CLASS_NAME, 'html5-main-video').screenshot_as_png
+        with open(os.path.join(base_dir, f'screen_{timestamp}.png'), 'wb') as file:
+            file.write(screenshot)
         send_telegram_message(f"Ссылка / поток #{thread} сделал скриншот в {timestamp} успешно")
         print(f"Ссылка / поток #{thread} сделал скриншот в {timestamp} успешно")
 
@@ -86,12 +89,13 @@ def save_photo(url: str, thread: int):
 
 
 if __name__ == "__main__":
-    urls = ["https://www.youtube.com/watch?v=h1wly909BYw", "https://www.youtube.com/watch?v=dhVzWNos718",
-            "https://www.youtube.com/watch?v=Feg-W433_TM"]
+    with open("config.json", "r") as f:
+        config = json.load(f)
+
+    urls = config["urls"]
     thread_count = len(urls)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
-
         futures = {executor.submit(save_photo, url, i + 1): url for i, url in enumerate(urls)}
 
         for future in concurrent.futures.as_completed(futures):

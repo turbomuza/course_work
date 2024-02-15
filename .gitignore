@@ -1,2 +1,7 @@
 .idea
+.pycache
+main.spec
+dist
 photos/
+run_script.spec
+main.spec
