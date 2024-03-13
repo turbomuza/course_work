@@ -1,7 +1,10 @@
 .idea
-.pycache
-main.spec
+__pycache__
+
+build/
 dist
+
 photos/
 run_script.spec
 main.spec
+
